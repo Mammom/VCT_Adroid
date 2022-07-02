@@ -1,6 +1,8 @@
 package com.daelim.vct.fragment;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,6 +25,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 
 
 public class FragNews extends Fragment {
@@ -31,7 +35,6 @@ public class FragNews extends Fragment {
     private View view;
 
     TextView tv_news;
-    ImageView iv_weather;
 
 
 
@@ -45,12 +48,12 @@ public class FragNews extends Fragment {
 
         new WeatherAsynTask(tv_news).execute("https://www.google.com/search?q=%EC%95%BC%EC%B1%84+%EA%B0%80%EA%B2%A9&sxsrf=ALiCzsboTnq7v6IkiNF4OP8ha2fTM6yZ0Q:1656691247089&source=lnms&tbm=nws&sa=X&ved=2ahUKEwjO4qPqh9j4AhUO_GEKHQIjC8AQ_AUoAXoECAEQAw&biw=1418&bih=1319&dpr=1","div[class=\"mCBkyc y355M ynAwRc MBeuO nDgy9d\"]");
 
+
         return view;
     }
 
     public void init(View view) {
         tv_news = view.findViewById(R.id.tv_news);
-        iv_weather = view.findViewById(R.id.iv_weather);
     }
 }
 
@@ -97,7 +100,6 @@ class WeatherAsynTask extends AsyncTask<String,Void,String>{
     }
 
 }
-
 
 
 
