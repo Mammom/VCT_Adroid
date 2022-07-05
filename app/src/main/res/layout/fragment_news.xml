@@ -25,13 +25,11 @@
         android:textSize="20sp"
         android:textStyle="bold" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/newsList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:fastScrollEnabled="false" />
 
-    <TextView
-        android:id="@+id/tv_news"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="뉴스 프래그먼트"
-        android:textSize="13sp"
-        android:textStyle="bold" />
 
 </LinearLayout>

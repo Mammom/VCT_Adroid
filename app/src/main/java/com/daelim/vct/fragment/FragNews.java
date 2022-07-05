@@ -6,18 +6,24 @@ import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.daelim.vct.R;
+import com.daelim.vct.adapaters.ViewAdepter;
+import com.daelim.vct.crawling.Crawler;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,15 +33,21 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 
 public class FragNews extends Fragment {
-
-
     private View view;
 
-    TextView tv_news;
-
+    RecyclerView newsList;
+    Disposable newsCrawlDisposable;
+    LinearLayoutManager layoutManager;
+    ViewAdepter adapter;
 
 
     @Nullable
@@ -45,61 +57,38 @@ public class FragNews extends Fragment {
 
         init(view);
 
-
-        new WeatherAsynTask(tv_news).execute("https://www.google.com/search?q=%EC%95%BC%EC%B1%84+%EA%B0%80%EA%B2%A9&sxsrf=ALiCzsboTnq7v6IkiNF4OP8ha2fTM6yZ0Q:1656691247089&source=lnms&tbm=nws&sa=X&ved=2ahUKEwjO4qPqh9j4AhUO_GEKHQIjC8AQ_AUoAXoECAEQAw&biw=1418&bih=1319&dpr=1","div[class=\"mCBkyc y355M ynAwRc MBeuO nDgy9d\"]");
-
+        crawlData();
 
         return view;
     }
 
-    public void init(View view) {
-        tv_news = view.findViewById(R.id.tv_news);
+    private void init(View view) {
+        newsList = view.findViewById(R.id.newsList);
+        adapter = new ViewAdepter(getContext());
+
+        layoutManager = new LinearLayoutManager(getContext());
+        newsList.setLayoutManager(layoutManager);
+        newsList.setAdapter(adapter);
+
+    }
+
+    private void crawlData(){
+        newsCrawlDisposable = Observable.interval(0L, 10L, TimeUnit.MINUTES)
+                .subscribeOn(Schedulers.io())
+                .map(notUsed -> Crawler.crawling())
+                .doOnNext(data -> Log.i("ArrayList Size", data.toString()))
+                .observeOn(AndroidSchedulers.from(Looper.getMainLooper()))
+                .subscribe(data -> {
+                    adapter.addData(data);
+                    adapter.notifyItemRangeInserted(adapter.getItemCount(), data.size());
+                },
+                throwable -> {Toast.makeText(getContext(), throwable.getLocalizedMessage(),
+                                    Toast.LENGTH_LONG).show();
+                    Log.w( "crawlData: ", throwable.getLocalizedMessage());}
+                );
     }
 }
 
-class WeatherAsynTask extends AsyncTask<String,Void,String>{
-
-    TextView textView;
-
-    public WeatherAsynTask(TextView textView){
-
-        this.textView = textView;
-
-    }
-
-    @Override
-    protected String doInBackground(String... params) {
-
-        String URL = params[0];
-        String El = params[1];
-        String result = "";
-
-        try {
-            Document document = Jsoup.connect(URL).get();
-            Elements elements = document.select(El);
-
-            for(Element element : elements){
-
-                result = result+element.text()+"\n";
-
-            }
-            return result;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(String s){
-        super.onPostExecute(s);
-
-        textView.setText(s);
-
-    }
-
-}
 
 
 
