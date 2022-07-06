@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class FragNews extends Fragment {
     RecyclerView newsList;
     Disposable newsCrawlDisposable;
     ViewAdepter adapter;
+    ProgressBar progressBar;
 
 
     @Nullable
@@ -59,12 +61,12 @@ public class FragNews extends Fragment {
         init(view);
 
         crawlData();
-
         return view;
     }
 
     private void init(View view) {
         newsList = view.findViewById(R.id.newsList);
+        progressBar = view.findViewById(R.id.progressBar);
         adapter = new ViewAdepter(getContext());
 
         newsList.setAdapter(adapter);
@@ -79,13 +81,7 @@ public class FragNews extends Fragment {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         });
-
-        newsList.setLayoutManager(new LinearLayoutManager(getContext()){
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        });
+        newsList.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
     private void crawlData(){
@@ -97,12 +93,15 @@ public class FragNews extends Fragment {
                 .subscribe(data -> {
                     adapter.updateData(data);
                     adapter.notifyDataSetChanged();
+                    progressBar.setVisibility(View.GONE);
                 },
                 throwable -> {Toast.makeText(getContext(), throwable.getLocalizedMessage(),
                                     Toast.LENGTH_LONG).show();
                     Log.w( "crawlData: ", throwable.getLocalizedMessage());}
                 );
+
     }
+
 }
 
 
