@@ -1,22 +1,25 @@
 package com.daelim.vct.crawling;
 
-import java.util.Map;
-
 public class CrawlingData {
-    private String title;
-    private String article;
-    private String pressName;
-    private String pressThumb;
-    private String url;
-    private String imgURI;
+    private final String title;
+    private final String article;
+    private final String pressName;
+    private final String pressThumb;
+    private final String url;
+    private final String imgURI;
 
-    public CrawlingData(Map<String, String> newsCrawlData){
-        this.title = newsCrawlData.get("title");
-        this.article = newsCrawlData.get("article");
-        this.pressName = newsCrawlData.get("pressName");
-        this.pressThumb = newsCrawlData.get("pressThumb");
-        this.url = newsCrawlData.get("url");
-        this.imgURI = newsCrawlData.get("imgURI");
+    public CrawlingData(String title,
+                        String article,
+                        String pressName,
+                        String pressThumb,
+                        String url,
+                        String imgURI) {
+        this.title = title;
+        this.article = article;
+        this.pressName = pressName;
+        this.pressThumb = pressThumb;
+        this.url = url;
+        this.imgURI = imgURI;
     }
 
     public String getTitle() {

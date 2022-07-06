@@ -1,9 +1,11 @@
 package com.daelim.vct.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
@@ -46,7 +48,6 @@ public class FragNews extends Fragment {
 
     RecyclerView newsList;
     Disposable newsCrawlDisposable;
-    LinearLayoutManager layoutManager;
     ViewAdepter adapter;
 
 
@@ -66,21 +67,36 @@ public class FragNews extends Fragment {
         newsList = view.findViewById(R.id.newsList);
         adapter = new ViewAdepter(getContext());
 
-        layoutManager = new LinearLayoutManager(getContext());
-        newsList.setLayoutManager(layoutManager);
         newsList.setAdapter(adapter);
 
+        setRvView();
+
+    }
+
+    private void setRvView(){
+        adapter.setOnItemClickListener((view1, position) -> {
+            String url = adapter.getURl(position);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        });
+
+        newsList.setLayoutManager(new LinearLayoutManager(getContext()){
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
     }
 
     private void crawlData(){
         newsCrawlDisposable = Observable.interval(0L, 10L, TimeUnit.MINUTES)
                 .subscribeOn(Schedulers.io())
                 .map(notUsed -> Crawler.crawling())
-                .doOnNext(data -> Log.i("ArrayList Size", data.toString()))
-                .observeOn(AndroidSchedulers.from(Looper.getMainLooper()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .retry(3)
                 .subscribe(data -> {
-                    adapter.addData(data);
-                    adapter.notifyItemRangeInserted(adapter.getItemCount(), data.size());
+                    adapter.updateData(data);
+                    adapter.notifyDataSetChanged();
                 },
                 throwable -> {Toast.makeText(getContext(), throwable.getLocalizedMessage(),
                                     Toast.LENGTH_LONG).show();

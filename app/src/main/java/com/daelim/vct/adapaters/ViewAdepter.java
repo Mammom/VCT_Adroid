@@ -1,6 +1,8 @@
 package com.daelim.vct.adapaters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +32,12 @@ public class ViewAdepter extends RecyclerView.Adapter<ViewAdepter.ListItemHolder
         this.context = context;
     }
 
-    public void addData(List<CrawlingData> dataList){
+    public String getURl(int idx){
+        return crawlDataList.get(idx).getUrl();
+    }
+
+    public void updateData(List<CrawlingData> dataList){
+        crawlDataList.clear();
         crawlDataList.addAll(dataList);
     }
 
@@ -42,7 +49,6 @@ public class ViewAdepter extends RecyclerView.Adapter<ViewAdepter.ListItemHolder
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onBindViewHolder(@NonNull ListItemHolder holder, int position) {
         CrawlingData data = crawlDataList.get(position);
@@ -60,7 +66,15 @@ public class ViewAdepter extends RecyclerView.Adapter<ViewAdepter.ListItemHolder
         return crawlDataList.size();
     }
 
+    private OnItemClickListener itemClickListener;
 
+    public interface OnItemClickListener{
+        void onItemClick(View view, int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener){
+        this.itemClickListener = listener;
+    }
     protected class ListItemHolder extends RecyclerView.ViewHolder {
         ImageView image, pressThumb;
         TextView title, article, pressName;
@@ -72,6 +86,18 @@ public class ViewAdepter extends RecyclerView.Adapter<ViewAdepter.ListItemHolder
             article = view.findViewById(R.id.article);
             pressName = view.findViewById(R.id.pressName);
             pressThumb = view.findViewById(R.id.pressThumb);
+
+
+            view.setOnClickListener(view1 -> {
+                int pos = getAdapterPosition();
+                if(pos != RecyclerView.NO_POSITION){
+                    if (itemClickListener != null){
+                        itemClickListener.onItemClick(view, pos);
+                    }
+                }
+            });
         }
     }
+
+
 }
