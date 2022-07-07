@@ -60,7 +60,6 @@ public class FragNews extends Fragment {
 
         init(view);
 
-        crawlData();
         return view;
     }
 
@@ -84,21 +83,38 @@ public class FragNews extends Fragment {
         newsList.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        crawlData();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        newsCrawlDisposable.dispose();
+    }
+
     private void crawlData(){
+        final int MAX_RETRY_CNT = 5;
+
         newsCrawlDisposable = Observable.interval(0L, 10L, TimeUnit.MINUTES)
-                .subscribeOn(Schedulers.io())
                 .map(notUsed -> Crawler.crawling())
                 .observeOn(AndroidSchedulers.mainThread())
-                .retry(3)
+                .retry((retryCnt, e) ->{
+                    Thread.sleep(1000);
+                    return  retryCnt < MAX_RETRY_CNT;
+                })
                 .subscribe(data -> {
                     adapter.updateData(data);
                     adapter.notifyDataSetChanged();
                     progressBar.setVisibility(View.GONE);
                 },
-                throwable -> {Toast.makeText(getContext(), throwable.getLocalizedMessage(),
+                throwable -> {
+                    Toast.makeText(getContext(), throwable.getLocalizedMessage(),
                                     Toast.LENGTH_LONG).show();
-                    Log.w( "crawlData: ", throwable.getLocalizedMessage());}
-                );
+                    Log.w( "crawlData: ", throwable.getLocalizedMessage());
+                });
 
     }
 

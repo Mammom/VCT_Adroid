@@ -24,41 +24,40 @@ public class Crawler {
 
 
     public static List<CrawlingData> crawling() throws IOException {
-        Observable<Element> elements = Observable.fromIterable(Jsoup.connect(CRAWL_URL)
-                        .get()
+            Elements elementList = Observable.just(1)
+                .subscribeOn(Schedulers.io())
+                .map(notUsed -> Jsoup.connect(CRAWL_URL).get()
                         .select("div[class=\"news_wrap api_ani_send\"]"))
+                .blockingFirst();
+
+        Observable<Element> elementObservable = Observable.fromIterable(elementList)
                 .take(5);
 
-        ObservableSource<String> titles = elements
+
+        ObservableSource<String> titles = elementObservable
                 .map(element -> element.select("a[class=\"news_tit\"]")
-                        .attr("title"))
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data));
+                        .attr("title"));
 
-        ObservableSource<String> articles = elements
+        ObservableSource<String> articles = elementObservable
                 .map(element -> element.select("a[class=\"api_txt_lines dsc_txt_wrap\"]")
-                        .text())
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data));
+                        .text());
 
-        ObservableSource<String> pressNames = elements
+        ObservableSource<String> pressNames = elementObservable
                 .map(element -> element.select("a[class=\"info press\"]")
                         .text()
-                        .replace("언론사 선정", ""))
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data));
+                        .replace("언론사 선정", ""));
 
-        ObservableSource<String> pressThumbs = elements
+        ObservableSource<String> pressThumbs = elementObservable
                 .map(element -> element.select("img[class=\"thumb\"]")
-                        .attr("src"))
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data));
+                        .attr("src"));
 
-        ObservableSource<String> newsURLs = elements
+        ObservableSource<String> newsURLs = elementObservable
                 .map(element -> element.select("a[class=\"news_tit\"]")
-                        .attr("href"))
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data));
+                        .attr("href"));
 
-        ObservableSource<String> imgURIs = elements
+        ObservableSource<String> imgURIs = elementObservable
                 .map(element -> element.select("img[class=\"thumb api_get\"]")
-                        .attr("src"))
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data));
+                        .attr("src"));
 
         return Observable.zip(
                 titles,
@@ -68,7 +67,6 @@ public class Crawler {
                 newsURLs,
                 imgURIs,
                 CrawlingData::new)
-                .doOnNext(data -> System.out.println(Thread.currentThread() + "|" + data))
                 .toList()
                 .blockingGet();
 
