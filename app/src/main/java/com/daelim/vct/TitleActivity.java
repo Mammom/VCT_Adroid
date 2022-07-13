@@ -4,13 +4,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.ImageView;
+
+import java.util.Random;
 
 public class TitleActivity extends AppCompatActivity {
+
+    ImageView imageView;
+
+    int[] img = {R.drawable.title_imgvct1,R.drawable.title_imgvct2,R.drawable.title_imgvct3,R.drawable.title_imgvct4};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_title);
+
+        imageView = (ImageView)findViewById(R.id.TitleImageView);
+
+        Random ram = new Random();
+        int num = ram.nextInt(img.length);
+
+        imageView.setBackgroundResource(img[num]);
+
         moveMain(1);
     }
 
